@@ -35,12 +35,14 @@ func handleClient( conn net.Conn){
 
 	conn.Write([]byte("Welcome to the Go TCP Server!\n"))
 
+	done:= make(chan bool)
 	go func(){
 		reader:= bufio.NewReader(conn)
 		for{
 			message,err:= reader.ReadString('\n')
 			if err!=nil{
 				fmt.Println("Client disconnected",err)
+				done <- true
 				return
 			}
 			fmt.Print("Client says:", message)
@@ -53,11 +55,14 @@ func handleClient( conn net.Conn){
 			serverMessage, err:= serverReader.ReadString('\n')
 			if err !=nil{
 				fmt.Println("Server is not Connected", err)
+				done<- true
 				return
 			}
-			fmt.Print("Server Says:", serverMessage)
+			conn.Write([]byte("Server: " + serverMessage))
 
 		}
 	}()
+
+	<- done
 }
 
